@@ -24,9 +24,9 @@ logs/
 .DS_Store
 Thumbs.db
 
-# IDE Settings (Optional)
+# IDE Settings
 .vscode/
 .idea/
 
-# Local Excel Exports (Agar file hasil download tidak ikut ke Git)
+# Local Excel Exports
 *.xlsx
