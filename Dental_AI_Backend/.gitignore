@@ -1,8 +1,8 @@
-# Dependency folders (Jangan di-push karena sangat berat)
+# Dependency folders 
 node_modules/
 jspm_packages/
 
-# Security (WAJIB: Agar password Aiven/DB tidak bocor ke GitHub)
+# Security and Environment files
 .env
 .env.local
 .env.development.local
