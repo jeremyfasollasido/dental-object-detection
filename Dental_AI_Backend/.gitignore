@@ -1,0 +1,32 @@
+# Dependency folders (Jangan di-push karena sangat berat)
+node_modules/
+jspm_packages/
+
+# Security (WAJIB: Agar password Aiven/DB tidak bocor ke GitHub)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+dist/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+
+# OS Metadata
+.DS_Store
+Thumbs.db
+
+# IDE Settings (Optional)
+.vscode/
+.idea/
+
+# Local Excel Exports (Agar file hasil download tidak ikut ke Git)
+*.xlsx
