@@ -12,7 +12,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
-    res.send('Dental AI API is running...');
+    res.json({
+        status: "Server is Running",
+        message: "Dental AI Backend is Live",
+        time: new Date()
+    });
 });
 app.use('/api', apiRoutes);
 
