@@ -1,6 +1,8 @@
 const detectionService = require('../service/detectionService');
 const excelExportService = require('../service/excelExport');
 const pool = require('../config/db');
+const storageService = require('../service/storageService');
+const historyService = require('../service/historyService');
 
 const processDetection = async (req, res) => {
     try {
@@ -9,6 +11,8 @@ const processDetection = async (req, res) => {
             return res.status(400).json({ error: "Mohon upload gambar radiologi." });
         }
 
+        const publicUrl = await storageService.uploadToCloud(req.file.buffer);
+
         const results = await detectionService.detectObjects(req.file.buffer);
 
         const confiedenceAvg = results.length > 0 ? results.reduce((acc, curr) => acc + curr.confidence, 0) / results.length : 0;
@@ -16,7 +20,7 @@ const processDetection = async (req, res) => {
         const insertQuery = 'INSERT INTO detection (image_name, patient_name, landmarks, confidence) VALUES ($1, $2, $3, $4) RETURNING id'; 
 
         const values = [
-            req.file.originalname,
+            publicUrl,
             patientName, 
             JSON.stringify(results), 
             confiedenceAvg.toFixed(4)];
@@ -29,16 +33,18 @@ const processDetection = async (req, res) => {
             console.log("Detection results saved to database with ID:", result.rows[0].id);
         });
 
-        dbResults = await pool.query('SELECT * FROM detection ORDER BY created_at DESC LIMIT 1');
+        dbResults = await pool.query(insertQuery, values);
+        const insertedId = dbResults.rows[0].id;
 
         res.status(200).json({
             success: true,
             message: "Deteksi berhasil dilakukan.",
             landmarks: results,
             data:{
-                id: dbResults.rows[0].id,
+                id: insertedId,
+                patientName: patientName,
                 createdAt: dbResults.rows[0].created_at,
-                image_name:req.file.originalname,
+                imageUrl:publicUrl,
                 landmarks:results 
             }
         });
@@ -89,8 +95,51 @@ const exportDetectionHistory = async (req, res) => {
     }
 };
 
+const getDetectionHistory = async (req, res) => {
+    try {
 
-module.exports = { processDetection, exportDetectionHistory };
+        const {patientName, startDate, endDate} = req.body || {};
+
+        let query = 
+        `SELECT id, patient_name, image_name, landmarks, confidence, created_at,
+        TO_CHAR(created_at, 'DD Month YYYY') as date_label 
+        FROM detection 
+        WHERE 1=1`;
+
+        let values = [];
+        let paramIndex = 1;
+
+        if (patientName && patientName.trim() !== "") {
+            query += ` AND (patient_name ILIKE $${paramIndex} OR patient_name ILIKE $${paramIndex + 1})`;
+            values.push(`%${patientName}%`);
+            values.push(`%:"${patientName}"%`)
+            paramIndex += 2;
+        }
+
+        if (startDate && endDate) {
+            query += ` AND created_at::date BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
+            values.push(startDate, endDate);
+        } else{
+            query += ` AND created_at > CURRENT_DATE - INTERVAL '3 days'`;
+        }
+        
+        const {rows} = await pool.query(query, values);
+
+        const groupedHistory = historyService.formatHistoryData(rows);
+
+        res.status(200).json({
+            success: true,
+            message: "Detection history retrieved successfully.",
+            data: groupedHistory
+        });
+    } catch (error) {
+        console.error("History Retrieval Error:", error);
+        res.status(500).json({ error: "Failed to retrieve detection history." });
+    }
+};
+
+
+module.exports = { processDetection, exportDetectionHistory, getDetectionHistory };
 
 // Example of how to use this controller in an Express app
 // const express = require('express');

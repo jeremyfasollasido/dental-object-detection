@@ -12,4 +12,6 @@ router.post('/detect', upload.single('image'), detectionController.processDetect
 
 router.post('/exportExcel',upload.none(), detectionController.exportDetectionHistory);
 
+router.post('/history', upload.none(), detectionController.getDetectionHistory);
+
 module.exports = router;
