@@ -2,12 +2,14 @@ const express = require('express');
 const cors = require('cors');
 const apiRoutes = require('./routes/api');
 const initScheduler = require('./utils/scheduler');
+const path = require('path');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 app.use('/api', apiRoutes);
 
