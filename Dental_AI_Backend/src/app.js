@@ -11,6 +11,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
+app.get('/', (req, res) => {
+    res.send('Dental AI API is running...');
+});
 app.use('/api', apiRoutes);
 
 app.use((err, req, res, next) => {
@@ -20,7 +23,9 @@ app.use((err, req, res, next) => {
     });
 });
 
-initScheduler();
+if (process.env.NODE_ENV !== 'production') {
+    initScheduler();
+}
 
 module.exports = app;
 
