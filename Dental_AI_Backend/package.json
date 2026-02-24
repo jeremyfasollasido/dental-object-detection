@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/app.js",
-    "build" : "echo 'No build step needed for this project'"
+    "build": "echo 'No build step needed for this project'"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +22,7 @@
     "node-cron": "^4.2.1",
     "onnxruntime-node": "^1.24.1",
     "pg": "^8.18.0",
+    "serverless-http": "^4.0.0",
     "sharp": "^0.34.5"
   }
 }
