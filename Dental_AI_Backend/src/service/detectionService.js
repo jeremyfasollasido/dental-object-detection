@@ -1,6 +1,8 @@
 const ort = require('onnxruntime-node');
 const sharp = require('sharp');
 const path = require('path');
+const fs = require('fs');
+const https = require('https');
 const imageProcessor = require('../utils/imageProcessor');
 
 let session;
@@ -8,7 +10,32 @@ let session;
 const initModel = async () => {
     if (!session) {
         try {
-            const modelPath = path.join(__dirname, '../models/best2.onnx'); 
+            let modelPath;
+            if (process.env.NODE_ENV === 'production') {
+                modelPath = '/tmp/best2.onnx';
+                if (!fs.existsSync(modelPath)) {
+                    console.log('Downloading model from GitHub...');
+                    const url = 'https://raw.githubusercontent.com/jeremyfasollasido/dental-object-detection/main/src/models/best2.onnx';
+                    const file = fs.createWriteStream(modelPath);
+                    https.get(url, (response) => {
+                        response.pipe(file);
+                        file.on('finish', () => {
+                            file.close();
+                            console.log('Model downloaded.');
+                        });
+                    }).on('error', (err) => {
+                        console.error('Error downloading model:', err);
+                        throw err;
+                    });
+                    // Wait for download to complete
+                    await new Promise((resolve, reject) => {
+                        file.on('finish', resolve);
+                        file.on('error', reject);
+                    });
+                }
+            } else {
+                modelPath = path.join(__dirname, '../models/best2.onnx');
+            }
             session = await ort.InferenceSession.create(modelPath);
             console.log("Model YOLOv8 Small berhasil dimuat.");
         } catch (error) {
