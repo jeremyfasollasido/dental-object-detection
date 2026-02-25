@@ -1,5 +1,3 @@
-const app = require('../src/app');
-
 module.exports = (req, res) => {
-  app.handle(req, res);
+  res.status(200).json({ message: 'Hello from Vercel!' });
 };
